@@ -214,6 +214,25 @@ class DoctrineWriter extends AbstractWriter
                 $this->setValue($entity, $value, $setter);
             }
         }
+        
+        foreach ($this->entityMetadata->getAssociationNames() as $assocName) {
+            $value = null;
+            if (isset($item[$assocName])) {
+                $value = $item[$assocName];
+            } elseif (method_exists($item, 'get' . ucfirst($assocName))) {
+                $value = $item->{'get' . ucfirst($assocName)};
+            }
+
+            if (null === $value) {
+                continue;
+            }
+            
+            $refClass = $this->entityMetadata->getAssociationTargetClass($assocName);
+            $ref = $this->entityManager->getReference($refClass, $value);
+            
+            $setter = 'set' . ucfirst($assocName);
+            $this->setValue($entity, $ref, $setter);
+        }
 
         $this->entityManager->persist($entity);
 
