@@ -179,9 +179,13 @@ class DoctrineWriter extends AbstractWriter
         // first
         if (false === $this->truncate) {
             if ($this->index) {
-                $entity = $this->entityRepository->findOneBy(array(
-                    $this->index => $item[$this->index]
-                ));
+                if (is_array($this->index)) {
+                    $criteria = array_intersect_key($item, array_flip($this->index));
+                }
+                else {
+                    $criteria = array($this->index => $item[$this->index]);
+                }
+                $entity = $this->entityRepository->findOneBy($criteria);
             } else {
                 $entity = $this->entityRepository->find(current($item));
             }
